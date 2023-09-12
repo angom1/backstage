@@ -9,6 +9,7 @@
 import { AppConfig } from '@backstage/config';
 import { AwsCredentialsManager } from '@backstage/integration-aws-node';
 import { AwsS3Integration } from '@backstage/integration';
+import { AzureDevOpsCredentialsProvider } from '@backstage/integration';
 import { AzureIntegration } from '@backstage/integration';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import { BitbucketCloudIntegration } from '@backstage/integration';
@@ -18,7 +19,6 @@ import { CacheService as CacheClient } from '@backstage/backend-plugin-api';
 import { CacheServiceOptions as CacheClientOptions } from '@backstage/backend-plugin-api';
 import { CacheServiceSetOptions as CacheClientSetOptions } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
-import { ConfigService } from '@backstage/backend-plugin-api';
 import cors from 'cors';
 import Docker from 'dockerode';
 import { ErrorRequestHandler } from 'express';
@@ -51,6 +51,7 @@ import { ReadTreeResponseFile } from '@backstage/backend-plugin-api';
 import { ReadUrlOptions } from '@backstage/backend-plugin-api';
 import { ReadUrlResponse } from '@backstage/backend-plugin-api';
 import { RequestHandler } from 'express';
+import { RootConfigService } from '@backstage/backend-plugin-api';
 import { Router } from 'express';
 import { SchedulerService } from '@backstage/backend-plugin-api';
 import { SearchOptions } from '@backstage/backend-plugin-api';
@@ -94,6 +95,7 @@ export class AzureUrlReader implements UrlReader {
     integration: AzureIntegration,
     deps: {
       treeResponseFactory: ReadTreeResponseFactory;
+      credentialsProvider: AzureDevOpsCredentialsProvider;
     },
   );
   // (undocumented)
@@ -525,7 +527,7 @@ export const legacyPlugin: (
       TransformedEnv<
         {
           cache: CacheClient;
-          config: ConfigService;
+          config: RootConfigService;
           database: PluginDatabaseManager;
           discovery: PluginEndpointDiscovery;
           logger: LoggerService;
@@ -610,7 +612,9 @@ export interface ReadTreeResponseFactory {
   ): Promise<ReadTreeResponse>;
   // (undocumented)
   fromTarArchive(
-    options: ReadTreeResponseFactoryOptions,
+    options: ReadTreeResponseFactoryOptions & {
+      stripFirstDirectory?: boolean;
+    },
   ): Promise<ReadTreeResponse>;
   // (undocumented)
   fromZipArchive(
